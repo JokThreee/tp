@@ -26,6 +26,7 @@ public class InteractionNote {
     /** Creates a note with explicit type and outcome; unspecified values represent absent metadata. */
     public InteractionNote(LocalDate date, String text, InteractionType type, InteractionOutcome outcome) {
         requireAllNonNull(date, text, type, outcome);
+        checkArgument(date.getYear() >= 1 && date.getYear() <= 9999, MESSAGE_INVALID_DATE);
         checkArgument(!text.isBlank(), MESSAGE_BLANK);
         this.date = date;
         this.text = text.strip();

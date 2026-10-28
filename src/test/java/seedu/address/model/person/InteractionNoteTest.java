@@ -1,8 +1,10 @@
 package seedu.address.model.person;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 
 import java.time.LocalDate;
@@ -15,6 +17,49 @@ import org.junit.jupiter.api.Test;
 import seedu.address.testutil.PersonBuilder;
 
 public class InteractionNoteTest {
+    @Test
+    public void constructor_unsupportedYears_rejectedBeforeTheyCanBePersisted() {
+        for (LocalDate date : List.of(LocalDate.MIN, LocalDate.of(-1, 1, 1), LocalDate.of(0, 1, 1),
+                LocalDate.of(10000, 1, 1), LocalDate.MAX)) {
+            IllegalArgumentException legacyError = assertThrows(IllegalArgumentException.class, () ->
+                    new InteractionNote(date, "Text"));
+            assertEquals(InteractionNote.MESSAGE_INVALID_DATE, legacyError.getMessage());
+            IllegalArgumentException typedError = assertThrows(IllegalArgumentException.class, () ->
+                    new InteractionNote(date, "Text", InteractionType.CALL, InteractionOutcome.PENDING));
+            assertEquals(InteractionNote.MESSAGE_INVALID_DATE, typedError.getMessage());
+        }
+        for (LocalDate date : List.of(LocalDate.of(1, 1, 1), LocalDate.of(9999, 12, 31))) {
+            assertEquals(date, new InteractionNote(date, "Text").getDate());
+        }
+    }
+
+    @Test
+    public void equality_independentFieldsAndDuplicateKey_areDistinctContracts() {
+        LocalDate date = LocalDate.of(2000, 1, 1);
+        InteractionNote note = new InteractionNote(date, "Text", InteractionType.CALL, InteractionOutcome.PENDING);
+        assertEquals(note, note);
+        assertNotEquals(note, null);
+        assertNotEquals(note, "Text");
+        for (InteractionNote different : List.of(
+                new InteractionNote(date.plusDays(1), "Text", InteractionType.CALL, InteractionOutcome.PENDING),
+                new InteractionNote(date, "text", InteractionType.CALL, InteractionOutcome.PENDING),
+                new InteractionNote(date, "Text", InteractionType.MEETING, InteractionOutcome.PENDING),
+                new InteractionNote(date, "Text", InteractionType.CALL, InteractionOutcome.SUCCESSFUL))) {
+            assertNotEquals(note, different);
+            assertNotEquals(different, note);
+        }
+        InteractionNote differentMetadata = new InteractionNote(date, "Text", InteractionType.OTHER,
+                InteractionOutcome.UNSUCCESSFUL);
+        assertTrue(note.hasSameContent(differentMetadata));
+        assertFalse(note.hasSameContent(new InteractionNote(date, "text")));
+        assertFalse(note.hasSameContent(new InteractionNote(date.plusDays(1), "Text")));
+    }
+
+    @Test
+    public void constructor_nullDateAndText_rejected() {
+        assertThrows(NullPointerException.class, () -> new InteractionNote(null, "Text"));
+        assertThrows(NullPointerException.class, () -> new InteractionNote(LocalDate.now(), null));
+    }
     @Test
     public void metadata_defaultsEqualityDisplayAndNullValidation() {
         LocalDate date = LocalDate.of(2000, 1, 1);

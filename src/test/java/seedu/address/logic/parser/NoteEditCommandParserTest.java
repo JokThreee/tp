@@ -1,6 +1,7 @@
 package seedu.address.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
@@ -17,6 +18,20 @@ import seedu.address.model.person.InteractionNote;
 
 public class NoteEditCommandParserTest {
     private final NoteEditCommandParser parser = new NoteEditCommandParser();
+
+    @Test
+    public void parse_null_rejected() {
+        assertThrows(NullPointerException.class, () -> parser.parse(null));
+    }
+
+    @Test
+    public void parse_metadataPrefixesInsideBody_remainLiteralText() {
+        String text = "t/CALL o/SUCCESSFUL; n/another prefix d/2000-01-01";
+        assertParseSuccess(parser, "1 2 n/" + text,
+                new NoteEditCommand(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON, text));
+        assertParseSuccess(parser, "1 2 d/2000-01-01 n/" + text,
+                new NoteEditCommand(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON, LocalDate.of(2000, 1, 1), text));
+    }
 
     @Test
     public void parse_validText_preservesContentAndTrimsEdges() {

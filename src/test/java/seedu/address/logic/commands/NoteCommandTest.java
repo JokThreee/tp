@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
@@ -26,6 +27,8 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyClientBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.InteractionNote;
+import seedu.address.model.person.InteractionOutcome;
+import seedu.address.model.person.InteractionType;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Relationship;
 import seedu.address.storage.JsonClientBookStorage;
@@ -39,6 +42,31 @@ public class NoteCommandTest {
 
     private final Model model = new ModelManager(getTypicalClientBook(), new UserPrefs());
     private final ClientBookParser parser = new ClientBookParser();
+
+    @Test
+    public void equals_comparesContactAndCompleteNoteIncludingMetadata() {
+        LocalDate date = LocalDate.of(2000, 1, 1);
+        InteractionNote note = new InteractionNote(date, "Called", InteractionType.CALL, InteractionOutcome.PENDING);
+        NoteCommand command = new NoteCommand(INDEX_FIRST_PERSON, note);
+        assertEquals(command, command);
+        assertEquals(command, new NoteCommand(INDEX_FIRST_PERSON,
+                new InteractionNote(date, "Called", InteractionType.CALL, InteractionOutcome.PENDING)));
+        assertNotEquals(command, null);
+        assertNotEquals(command, "note");
+        assertNotEquals(command, new NoteCommand(INDEX_SECOND_PERSON, note));
+        assertNotEquals(command, new NoteCommand(INDEX_FIRST_PERSON,
+                new InteractionNote(date, "Called", InteractionType.MEETING, InteractionOutcome.PENDING)));
+        assertNotEquals(command, new NoteCommand(INDEX_FIRST_PERSON,
+                new InteractionNote(date, "Called", InteractionType.CALL, InteractionOutcome.SUCCESSFUL)));
+    }
+
+    @Test
+    public void constructorAndExecute_nullArguments_rejected() {
+        InteractionNote note = new InteractionNote(LocalDate.of(2000, 1, 1), "Called");
+        assertThrows(NullPointerException.class, () -> new NoteCommand(null, note));
+        assertThrows(NullPointerException.class, () -> new NoteCommand(INDEX_FIRST_PERSON, null));
+        assertThrows(NullPointerException.class, () -> new NoteCommand(INDEX_FIRST_PERSON, note).execute(null, null));
+    }
 
     @Test
     public void execute_throughLogic_validDatesPersistAndInvalidDatesPreserveRecords() throws Exception {

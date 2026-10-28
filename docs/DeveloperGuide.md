@@ -365,6 +365,11 @@ The four-argument constructor rejects null metadata. Full value equality and has
 so changes to metadata participate in person equality and persistence; duplicate-note detection deliberately
 continues to compare only date and text, preserving the existing rule regardless of metadata.
 
+Both note constructors enforce the same supported year range (`0001`–`9999`) as `parseDate`, including when
+called directly rather than through a command parser. This keeps model-created notes representable by the
+JSON loader; future dates within that range remain valid model values for legacy data, with command execution
+separately enforcing the existing no-future-date policy.
+
 `NoteCommandParser` retains the date-first syntax and splits at the first whitespace-delimited `n/`.
 It tokenizes only the header with `PREFIX_DUE_DATE`, `PREFIX_INTERACTION_TYPE` (`t/`) and
 `PREFIX_INTERACTION_OUTCOME` (`o/`), using the existing `ArgumentTokenizer` and duplicate-prefix validation.

@@ -1,5 +1,6 @@
 package seedu.address.logic.parser;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
@@ -16,6 +17,11 @@ import seedu.address.model.person.InteractionType;
 
 public class NoteCommandParserTest {
     private final NoteCommandParser parser = new NoteCommandParser();
+
+    @Test
+    public void parse_null_rejected() {
+        assertThrows(NullPointerException.class, () -> parser.parse(null));
+    }
 
     @Test
     public void parse_optionalMetadata_acceptsEitherOrderAndCaseWithoutParsingBodyPrefixes() {
